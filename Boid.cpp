@@ -91,7 +91,7 @@ namespace EnttBoids {
 		for (int i{ 0 }; i < size; ++i) {
 			double d = m_location.Distance(Boids[i].m_location);
 			
-			if (this != &(Boids[i]) && d > 0 && d < desiredSeparation)
+			if (this != &(Boids[i]) && d < desiredSeparation)
 			{
 				Vector2<float> Diff{};
 				Diff = m_location - Boids[i].GetLocation();
