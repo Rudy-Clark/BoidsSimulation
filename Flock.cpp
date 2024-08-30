@@ -20,7 +20,7 @@ namespace EnttBoids {
 	void Flock::Flocking(const float DeltaTime)
 	{
 		for (int i{ 0 }; i < m_boids.size(); ++i) {
-			m_boids[i].Run(std::data(m_boids), Settings::TotalBoids, DeltaTime);
+			m_boids[i].Run(m_boids, DeltaTime);
 		}
 	}
 

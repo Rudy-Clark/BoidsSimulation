@@ -6,4 +6,5 @@ namespace Settings {
 	constexpr char title[]{ "Boids Simulation" };
 	constexpr int FPS{ 75 };
 	constexpr int TotalBoids{ 300 };
+	constexpr int perceptionRadius{ 40 };
 }

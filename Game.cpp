@@ -11,7 +11,7 @@ namespace EnttBoids {
 		: m_windowDimension{screenWidth, screenHeight}
 	{
 		InitWindow(screenWidth, screenHeight, title);
-		SetTargetFPS(fps);
+		//SetTargetFPS(fps);
 		ToggleFullscreen();
 
 		// init our boids

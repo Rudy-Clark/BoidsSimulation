@@ -1,6 +1,8 @@
 #pragma once
 
+#include <array>
 #include "Vector2.hpp"
+#include "Settings.hpp"
 
 namespace EnttBoids {
 	class Boid
@@ -21,16 +23,16 @@ namespace EnttBoids {
 
 		inline void SetLocation(const Vector2<float>& location) { m_location = location; };
 
-		void Run(const Boid* const boids, const int size, const float DeltaTime);
+		void Run(const std::array<Boid, Settings::TotalBoids>& Boids, const float DeltaTime);
 		
 	private:
 		void Update(const float DeltaTime);
-		void Flock(const Boid* const Boids, const int size);
+		void Flock(const std::array<Boid, Settings::TotalBoids>& Boids);
 
 		// Min rules for boids simulation
-		Vector2<float> Separation(const Boid* const Boids, const int size);
-		Vector2<float> Alignment(const Boid* const Boids, const int size);
-		Vector2<float> Cohesion(const Boid* const Boids, const int size);
+		Vector2<float> Separation(const std::array<Boid, Settings::TotalBoids>& Boids);
+		Vector2<float> Alignment(const std::array<Boid, Settings::TotalBoids>& Boids);
+		Vector2<float> Cohesion(const std::array<Boid, Settings::TotalBoids>& Boids);
 
 		bool m_bPredator{};
 		Vector2<float> m_accelaration{};

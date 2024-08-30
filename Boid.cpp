@@ -51,9 +51,9 @@ namespace EnttBoids {
 		return *this;
 	}
 
-	void Boid::Run(const Boid* const Boids, const int size, const float DeltaTime)
+	void Boid::Run(const std::array<Boid, Settings::TotalBoids>& Boids , const float DeltaTime)
 	{
-		Flock(Boids, size);
+		Flock(Boids);
 		Update(DeltaTime);
 	}
 
@@ -67,15 +67,15 @@ namespace EnttBoids {
 		m_accelaration *= 0;
 	}
 
-	void Boid::Flock(const Boid* const Boids, const int size)
+	void Boid::Flock(const std::array<Boid, Settings::TotalBoids>& Boids )
 	{
-		Vector2 Sep = Separation(Boids, size);
-		Vector2 Coh = Cohesion(Boids, size);
-		Vector2 Aln = Alignment(Boids, size);
+		Vector2 Sep = Separation(Boids);
+		Vector2 Coh = Cohesion(Boids);
+		Vector2 Aln = Alignment(Boids);
 
 		Sep *= 1.5;
-		Coh *= 1.0;
-		Aln *= 1.5;
+		Coh *= 1.1;
+		Aln *= 1.1;
 
 		m_accelaration += Aln;
 		m_accelaration += Sep;
@@ -83,16 +83,15 @@ namespace EnttBoids {
 		
 	}
 	
-	Vector2<float> Boid::Separation(const Boid* const Boids, const int size)
+	Vector2<float> Boid::Separation(const std::array<Boid, Settings::TotalBoids>& Boids )
 	{
-		float desiredSeparation{ 50 };
 		Vector2<float> Steer{};
 		int count{};
 
-		for (int i{ 0 }; i < size; ++i) {
+		for (int i{ 0 }; i < Boids.size(); ++i) {
 			double d = m_location.Distance(Boids[i].m_location);
 			
-			if (this != &(Boids[i]) && d < desiredSeparation)
+			if (this != &(Boids[i]) && d < Settings::perceptionRadius)
 			{
 				Vector2<float> Diff{};
 				Diff = m_location - Boids[i].GetLocation();
@@ -114,18 +113,17 @@ namespace EnttBoids {
 		return Steer;
 	}
 
-	Vector2<float> Boid::Alignment(const Boid* const Boids, const int size)
+	Vector2<float> Boid::Alignment(const std::array<Boid, Settings::TotalBoids>& Boids )
 	{
-		float perceptionRadius{ 50 };
 		Vector2<float> Steer{};
 		int count{};
 
-		for (int i{}; i < size; ++i)
+		for (int i{}; i < Boids.size(); ++i)
 		{
 			Vector2 BoidLocation = Boids[i].GetLocation();
 			Vector2 BoidVelocity = Boids[i].GetVelocity();
 			float distance = m_location.Distance(BoidLocation);
-			if (this != &(Boids[i]) && distance < perceptionRadius)
+			if (this != &(Boids[i]) && distance < Settings::perceptionRadius)
 			{
 				Steer += BoidVelocity;
 				++count;
@@ -143,18 +141,16 @@ namespace EnttBoids {
 		return Steer;
 	}
 
-	Vector2<float> Boid::Cohesion(const Boid* const Boids, const int size)
+	Vector2<float> Boid::Cohesion(const std::array<Boid, Settings::TotalBoids>& Boids )
 	{
-		float neighborDist{ 50 };
-
 		Vector2<float> Steer{};
 		int count{};
 
-		for (int i{}; i < size; ++i) 
+		for (int i{}; i < Boids.size(); ++i) 
 		{
 			Vector2 BoidLocation = Boids[i].GetLocation();
 			float distance = m_location.Distance(BoidLocation);
-			if (this != &(Boids[i]) && distance < neighborDist)
+			if (this != &(Boids[i]) && distance < Settings::perceptionRadius)
 			{
 				Steer += BoidLocation;
 				++count;
