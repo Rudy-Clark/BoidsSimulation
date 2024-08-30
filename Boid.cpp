@@ -1,5 +1,6 @@
 #include "Boid.hpp"
 #include <raylib.h>
+#include <cmath>
 
 namespace EnttBoids {
 	Boid::Boid(float x, float y)
@@ -74,7 +75,7 @@ namespace EnttBoids {
 
 		Sep *= 1.5;
 		Coh *= 1.0;
-		Aln *= 1.0;
+		Aln *= 1.5;
 
 		m_accelaration += Aln;
 		m_accelaration += Sep;
@@ -96,7 +97,7 @@ namespace EnttBoids {
 				Vector2<float> Diff{};
 				Diff = m_location - Boids[i].GetLocation();
 				Diff.Normalize();
-				Diff /= (d * d);
+				Diff /= std::fmax((d * d), 0.0000000001f); // let's prevent from division by zero!!!
 				Steer += Diff;
 				++count;
 			}
