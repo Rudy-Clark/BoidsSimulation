@@ -3,19 +3,22 @@
 #include <cmath>
 
 namespace EnttBoids {
-	Boid::Boid(float x, float y)
+	
+	Boid::Boid(float x, float y, RulesFactor& rulesFactor)
 		: m_location{x, y}
 		, m_maxForce{0.2}
 		, m_maxSpeed{5}
+		, m_rulesFactor{ &rulesFactor }
 	{
 		m_velocity = Vector2{ static_cast<float>(GetRandomValue(-100, 100)) / 100.f, static_cast<float>(GetRandomValue(-100, 100)) / 100.f };
 		m_velocity.SetMagnitude((float)GetRandomValue(2, 4));
 	}
 
-	Boid::Boid(float x, float y, bool predatorCheck)
+	Boid::Boid(float x, float y, bool predatorCheck, RulesFactor& rulesFactor)
 		: m_location{x, y}
 		, m_bPredator{predatorCheck}
 		, m_maxForce{ 0.2 }
+		, m_rulesFactor{ &rulesFactor }
 	{
 		if (predatorCheck) 
 		{
@@ -32,29 +35,72 @@ namespace EnttBoids {
 	}
 
 	Boid::Boid(const Boid&& other) noexcept
+		: m_rulesFactor{other.m_rulesFactor}
 	{
 		m_location = other.m_location;
 		m_velocity = other.m_velocity;
 		m_accelaration = other.m_accelaration;
 		m_maxForce = other.m_maxForce;
 		m_maxSpeed = other.m_maxSpeed;
+		m_rulesFactor = other.m_rulesFactor;
 	}
 
 	Boid& Boid::operator=(const Boid&& other) noexcept
 	{
-		m_location = other.m_location;
-		m_velocity = other.m_velocity;
-		m_accelaration = other.m_accelaration;
-		m_maxForce = other.m_maxForce;
-		m_maxSpeed = other.m_maxSpeed;
-
+		if (this != &other)
+		{
+			m_location = other.m_location;
+			m_velocity = other.m_velocity;
+			m_accelaration = other.m_accelaration;
+			m_maxForce = other.m_maxForce;
+			m_maxSpeed = other.m_maxSpeed;
+			m_rulesFactor = other.m_rulesFactor;
+		}
+		
 		return *this;
+	}
+
+	Boid& Boid::operator=(const Boid& other) noexcept
+	{
+		if (this != &other)
+		{
+			m_location = other.m_location;
+			m_velocity = other.m_velocity;
+			m_accelaration = other.m_accelaration;
+			m_maxForce = other.m_maxForce;
+			m_maxSpeed = other.m_maxSpeed;
+			m_rulesFactor = other.m_rulesFactor;
+		}
+		
+		return *this;
+
 	}
 
 	void Boid::Run(const std::array<Boid, Settings::TotalBoids>& Boids , const float DeltaTime)
 	{
 		Flock(Boids);
 		Update(DeltaTime);
+	}
+
+	void Boid::LimitLocation(const Vector2<int> Bounds)
+	{
+		if (m_location.x < 0)
+		{
+			m_location.x = Bounds.x;
+		}
+		else if (m_location.x > Bounds.x)
+		{
+			m_location.x = 0;
+		}
+
+		if (m_location.y < 0)
+		{
+			m_location.y = Bounds.y;
+		}
+		else if (m_location.y > Bounds.y)
+		{
+			m_location.y = 0;
+		}
 	}
 
 	void Boid::Update(const float DeltaTime)
@@ -73,9 +119,9 @@ namespace EnttBoids {
 		Vector2 Coh = Cohesion(Boids);
 		Vector2 Aln = Alignment(Boids);
 
-		Sep *= 1.5;
-		Coh *= 1.1;
-		Aln *= 1.1;
+		Sep *= m_rulesFactor->separation;
+		Coh *= m_rulesFactor->cohesion;
+		Aln *= m_rulesFactor->alignment;
 
 		m_accelaration += Aln;
 		m_accelaration += Sep;
@@ -94,7 +140,7 @@ namespace EnttBoids {
 			if (this != &(Boids[i]) && d < Settings::perceptionRadius)
 			{
 				Vector2<float> Diff{};
-				Diff = m_location - Boids[i].GetLocation();
+				Diff = m_location - Boids[i].GetLocationRef();
 				Diff.Normalize();
 				Diff /= std::fmax((d * d), 0.0000000001f); // let's prevent from division by zero!!!
 				Steer += Diff;
@@ -120,8 +166,8 @@ namespace EnttBoids {
 
 		for (int i{}; i < Boids.size(); ++i)
 		{
-			Vector2 BoidLocation = Boids[i].GetLocation();
-			Vector2 BoidVelocity = Boids[i].GetVelocity();
+			const Vector2<float>& BoidLocation = Boids[i].GetLocationRef();
+			const Vector2<float>& BoidVelocity = Boids[i].GetVelocityRef();
 			float distance = m_location.Distance(BoidLocation);
 			if (this != &(Boids[i]) && distance < Settings::perceptionRadius)
 			{
@@ -148,7 +194,7 @@ namespace EnttBoids {
 
 		for (int i{}; i < Boids.size(); ++i) 
 		{
-			Vector2 BoidLocation = Boids[i].GetLocation();
+			const Vector2<float>& BoidLocation = Boids[i].GetLocationRef();
 			float distance = m_location.Distance(BoidLocation);
 			if (this != &(Boids[i]) && distance < Settings::perceptionRadius)
 			{
