@@ -17,7 +17,7 @@ namespace EnttBoids {
 	Game::Game(const int screenWidth, const int screenHeight, const int fps)
 		: m_windowSize{screenWidth, screenHeight}
 	{
-		//SetTargetFPS(fps);
+		SetTargetFPS(fps);
 		//ToggleFullscreen();
 	}
 
